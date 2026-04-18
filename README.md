@@ -15,7 +15,8 @@ This README reflects the current code in this repository.
 ### 1. Eye Disease Detection (Integrated in main app)
 
 - Route: `/detection` (login required)
-- Model file expected at: `static/models/eye_disease_mobilenetv2_finetuned.h5`
+- Model file expected at: `static/models/eye_disease_finalV2.keras`
+- Class labels expected at: `static/models/class_labels_V2.json`
 - Predicted classes:
     - Cataract
     - Diabetic Retinopathy
@@ -91,7 +92,8 @@ I-Care/
 ├── templates/                 # Main app templates
 ├── static/                    # Main app static assets + model files
 │   └── models/
-│       ├── eye_disease_mobilenetv2_finetuned.h5
+│       ├── eye_disease_finalV2.keras
+│       ├── class_labels_V2.json
 │       └── eye_redness_model.keras
 ├── color/                     # Color data/artifacts/training scripts
 ├── fatigue/                   # Standalone fatigue prototype app
@@ -148,7 +150,8 @@ Notes:
 
 Required for AI endpoints:
 
-- `static/models/eye_disease_mobilenetv2_finetuned.h5`
+- `static/models/eye_disease_finalV2.keras`
+- `static/models/class_labels_V2.json`
 - `static/models/eye_redness_model.keras`
 
 ### 6. Run the main app

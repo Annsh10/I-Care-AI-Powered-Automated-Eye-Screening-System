@@ -4,6 +4,7 @@ from werkzeug.utils import secure_filename
 import sqlite3
 import atexit
 import os
+import json
 import uuid
 import numpy as np
 import io
@@ -152,9 +153,45 @@ atexit.register(_close_db_on_exit)
 app.register_blueprint(color_bp)
 
 # ---------------- Eye Disease Model (lazy) ----------------
-MODEL_PATH = os.path.join("static", "models", "eye_disease_mobilenetv2_finetuned.h5")
-DISEASE_CLASSES = ["Cataract", "Diabetic Retinopathy", "Glaucoma", "Normal"]
+MODEL_PATH = os.path.join("static", "models", "eye_disease_finalV2.keras")
+CLASS_LABELS_PATH = os.path.join("static", "models", "class_labels_V2.json")
+DEFAULT_DISEASE_CLASSES = ["Cataract", "Diabetic Retinopathy", "Glaucoma", "Normal"]
+DISEASE_CLASSES = DEFAULT_DISEASE_CLASSES.copy()
 eye_disease_model = None
+
+
+def _to_display_disease_label(label):
+    normalized = str(label).strip().lower()
+    mapping = {
+        "cataract": "Cataract",
+        "diabetic_retinopathy": "Diabetic Retinopathy",
+        "glaucoma": "Glaucoma",
+        "normal": "Normal",
+    }
+    if normalized in mapping:
+        return mapping[normalized]
+    return normalized.replace("_", " ").title()
+
+
+def _load_disease_classes_from_file():
+    global DISEASE_CLASSES
+    if not os.path.exists(CLASS_LABELS_PATH):
+        print(f"Warning: class labels file not found at {CLASS_LABELS_PATH}; using defaults")
+        return
+
+    try:
+        with open(CLASS_LABELS_PATH, "r", encoding="utf-8") as f:
+            labels = json.load(f)
+
+        if isinstance(labels, list) and labels:
+            DISEASE_CLASSES = [_to_display_disease_label(label) for label in labels]
+        else:
+            print(f"Warning: invalid class labels format in {CLASS_LABELS_PATH}; using defaults")
+    except Exception as exc:
+        print(f"Warning: failed to load class labels from {CLASS_LABELS_PATH}: {exc}; using defaults")
+
+
+_load_disease_classes_from_file()
 
 # ---------------- Eye Fatigue Models (lazy) ----------------
 EYE_REDNESS_MODEL_PATH = os.path.join("static", "models", "eye_redness_model.keras")
@@ -298,12 +335,12 @@ def detection():
         
         results = []
         for i in sorted_indices:
-            cls_name = DISEASE_CLASSES[i]
+            cls_name = DISEASE_CLASSES[i] if i < len(DISEASE_CLASSES) else f"Class {i}"
             conf = float(probs[i]) * 100
             results.append({
                 "class_name": cls_name,
                 "confidence": conf,
-                "description": DISEASE_INFO[cls_name]
+                "description": DISEASE_INFO.get(cls_name, "Please consult an ophthalmologist for a detailed assessment.")
             })
 
         top_class = results[0]["class_name"]
@@ -317,7 +354,7 @@ def detection():
                 disease_description = f"The analysis suggests normal findings, but with moderate confidence. {DISEASE_INFO['Normal']}"
         else:
             prediction = f"Potential {top_class} Detected"
-            disease_description = f"The analysis indicates a potential risk of {top_class}. {DISEASE_INFO[top_class]}"
+            disease_description = f"The analysis indicates a potential risk of {top_class}. {DISEASE_INFO.get(top_class, 'Please consult an ophthalmologist for a detailed assessment.')}"
 
         # Store in session then redirect (PRG pattern)
         session['eye_pred'] = {

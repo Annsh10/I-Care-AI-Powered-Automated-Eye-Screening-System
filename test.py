@@ -2,7 +2,7 @@ import os
 import tensorflow as tf
 
 # Path to your model
-MODEL_PATH = os.path.join("static", "models", "eye_disease_mobilenetv2_finetuned.h5")
+MODEL_PATH = os.path.join("static", "models", "eye_disease_finalV2.keras")
 
 print("🔍 Checking model file...")
 if not os.path.exists(MODEL_PATH):
