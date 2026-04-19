@@ -7,8 +7,12 @@ from PIL import Image
 import io
 import base64
 from inference_sdk import InferenceHTTPClient
+from dotenv import load_dotenv
 
 app = Flask(__name__)
+
+# Load environment variables from .env if present
+load_dotenv()
 
 # Configuration
 UPLOAD_FOLDER = 'static/uploads'
@@ -27,9 +31,13 @@ model = keras.models.load_model(MODEL_PATH)
 print("Model loaded successfully!")
 
 # Initialize Roboflow client
+ROBOFLOW_API_KEY = os.getenv("ROBOFLOW_API_KEY")
+if not ROBOFLOW_API_KEY:
+    raise RuntimeError("Missing ROBOFLOW_API_KEY. Set it in your .env file or environment variables.")
+
 roboflow_client = InferenceHTTPClient(
     api_url="https://serverless.roboflow.com",
-    api_key="hBljhOwZ15CdLgOj0Kjj"
+    api_key=ROBOFLOW_API_KEY
 )
 FATIGUE_MODEL = "eyes-bhltc/1"
 DRYNESS_MODEL = "dry-eye-prediction/3"
