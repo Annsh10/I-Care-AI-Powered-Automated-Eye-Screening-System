@@ -81,8 +81,7 @@ def search_clinics():
         params = {
             "location": f"{lat},{lng}",
             "radius": 5000,
-            "keyword": "eye specialist ophthalmologist optometrist",
-            "type": "hospital",
+            "keyword": "eye clinic ophthalmologist optometrist eye specialist hospital",
             "key": api_key,
         }
 
